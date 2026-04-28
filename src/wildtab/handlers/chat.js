@@ -907,7 +907,6 @@ class ChatHandler {
   }
 
   async handleWhoList(rawPlayerList) {
-    this.wildtabInstance.onWhoRefreshStart();
     await this.getIgnoredPlayers({ forceRefresh: true });
     if (this.wildtabInstance.autoStatsMode) {
       this.wildtabInstance.autoStatsMode = false;
@@ -919,7 +918,6 @@ class ChatHandler {
       .map((p) => p.trim())
       .filter(Boolean);
     await this.wildtabInstance.processWhoPlayers(players);
-    this.wildtabInstance.onWhoRefreshComplete(players);
     this.startRushAssessment(players);
   }
 
@@ -1138,7 +1136,6 @@ class ChatHandler {
     });
     if (isSelfJoin) {
       this.resetLobbySessionState();
-      this.wildtabInstance.onLobbyJoinForTagFooter();
       this.markLobbyEntered();
       this.wildtabInstance.tabManager.resetGameTeamColorCache();
       this.wildtabInstance.autoStatsMode = true;
