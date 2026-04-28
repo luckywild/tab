@@ -62,27 +62,6 @@ function withPrefix(text, tone = STYLE.info) {
     .join("\n");
 }
 
-function formatTagFooterPanel(selectedPlayer, tags = [], options = {}) {
-  if (!selectedPlayer || !Array.isArray(tags) || tags.length === 0) return "";
-
-  const teamColor = options.teamColor || "§e";
-  const teamLetter = options.teamLetter || "?";
-  const titleLine =
-    `${teamColor}§l${teamLetter} ${teamColor}${selectedPlayer} ${STYLE.secondary}tags:`;
-
-  const detailLines = tags.map((tag) => {
-    const tagType = String(tag?.type || tag?.clientTag || "?").replace(/_/g, " ");
-    const tagColor = String(tag?.color || STYLE.error);
-    const provider = String(tag?.provider || "unknown");
-    const providerName = humanizeProvider(provider);
-    const providerColorCode = providerColor(provider);
-    const reason = messages.tags.singleLineReason(tag?.reason, messages.tags.noContext);
-    return `${tagColor}${tagType} ${providerColorCode}(${providerName})${STYLE.secondary}: ${reason}`;
-  });
-
-  return `\n\n${titleLine}\n${detailLines.join("\n")}`;
-}
-
 function prefixedBase(text) {
   return withPrefix(text, STYLE.info);
 }
@@ -230,9 +209,6 @@ const messages = {
       return compact.length > 0 ? compact : fallback;
     },
     reasonInline: (reason) => prefixedBase(colorizeByWord(reason, "§7§o")),
-  },
-  tagFooter: {
-    panel: formatTagFooterPanel,
   },
   rush: {
     localSummary: (summary) => prefixedBase(summary),

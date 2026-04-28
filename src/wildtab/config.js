@@ -294,25 +294,6 @@ module.exports = [
     ],
   },
   {
-    label: "Tab Display - Tag Footer",
-    description: "Append selected player tags to tab footer and cycle with crouch",
-    defaults: {
-      tab: {
-        tagFooter: {
-          enabled: false,
-        },
-      },
-    },
-    settings: [
-      {
-        key: "tab.tagFooter.enabled",
-        type: "toggle",
-        text: ["OFF", "ON"],
-        description: "Append selected player tag details to tab footer and cycle with crouch",
-      },
-    ],
-  },
-  {
     label: "Auto /who",
     description: "Automatically run /who at game start",
     defaults: {
