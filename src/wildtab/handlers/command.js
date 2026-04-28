@@ -153,7 +153,7 @@ class CommandHandler {
     }
   }
 
-  async handleTestApisCommand(ctx) {
+  async handleTestApisCommand() {
     this.api.chat(messages.info.testingApis);
     const results = await this.runApiHealthChecks();
 
@@ -176,7 +176,7 @@ class CommandHandler {
     this.api.chat(" ");
   }
 
-  async handleTestMessagesCommand(ctx) {
+  async handleTestMessagesCommand() {
     const samplePlayer = "wild1278";
     const sampleTagType = "BC";
     const sampleProviders = messages.utility.coloredProviders(["urchin", "seraph"]);

@@ -51,6 +51,7 @@ class HypixelApi {
     if (!apiKey) return null;
 
     let lastStatus = null;
+    let lastError = null;
     for (let attempt = 0; attempt <= retryDelays.length; attempt++) {
       try {
         const response = await fetch(url, { headers: { "API-Key": apiKey } });
@@ -63,7 +64,7 @@ class HypixelApi {
           return null;
         }
       } catch (error) {
-        // Network/transient failures are retried below.
+        lastError = error;
       }
 
       if (attempt < retryDelays.length) {
@@ -75,7 +76,12 @@ class HypixelApi {
       console.error(`[Hypixel API] Repeated HTTP ${lastStatus} for ${url}`);
     }
 
+    if (lastStatus === null && lastError && this.api?.config?.get("debug")) {
+      this.api.debugLog?.(`[Hypixel API] Network error fetching ${url}: ${lastError.message}`);
+    }
+
     return null;
+
   }
 
   async fetchJsonResultWithRetry(url, apiKey, retryDelays = [500, 1000]) {
@@ -83,6 +89,8 @@ class HypixelApi {
 
     let lastStatus = 0;
     let lastError = null;
+    let loggedJsonError = false;
+
 
     for (let attempt = 0; attempt <= retryDelays.length; attempt++) {
       try {
@@ -94,6 +102,10 @@ class HypixelApi {
           data = await response.json();
         } catch (jsonError) {
           data = null;
+          if (!loggedJsonError && this.api?.config?.get("debug")) {
+            loggedJsonError = true;
+            this.api.debugLog?.(`[Hypixel API] Failed to parse JSON for ${url}: ${jsonError.message}`);
+          }
         }
 
         if (response.ok) {
@@ -122,6 +134,7 @@ class HypixelApi {
 
   async fetchPlayerWithRetry(uuid, apiKey) {
     let lastStatus = null;
+    let lastError = null;
 
     for (let attempt = 0; attempt <= this.FETCH_RETRY_DELAYS_MS.length; attempt++) {
       try {
@@ -139,7 +152,7 @@ class HypixelApi {
           return null;
         }
       } catch (error) {
-        // Network/transient failures are retried below.
+        lastError = error;
       }
 
       if (attempt < this.FETCH_RETRY_DELAYS_MS.length) {
@@ -151,7 +164,12 @@ class HypixelApi {
       console.error(
         `[Hypixel API] Repeated HTTP ${lastStatus} while fetching stats for uuid=${uuid}`,
       );
+    } else if (lastError && this.api?.config?.get("debug")) {
+      this.api.debugLog?.(
+        `[Hypixel API] Network error fetching player for uuid=${uuid}: ${lastError.message}`,
+      );
     }
+
     return null;
   }
 

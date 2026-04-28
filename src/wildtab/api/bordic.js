@@ -27,6 +27,7 @@ class BordicApi {
 
   async fetchJsonWithoutAuthWithRetry(url, retryDelays = [500, 1000], resourceName = "resource") {
     let lastStatus = null;
+    let lastError = null;
     for (let attempt = 0; attempt <= retryDelays.length; attempt++) {
       try {
         const response = await fetch(url);
@@ -39,7 +40,7 @@ class BordicApi {
           return null;
         }
       } catch (error) {
-        // Network/transient failures are retried below.
+        lastError = error;
       }
 
       if (attempt < retryDelays.length) {
@@ -53,6 +54,9 @@ class BordicApi {
       );
     }
 
+    if (lastStatus === null && lastError && this.api?.config?.get("debug")) {
+      this.api.debugLog?.(`[Bordic API] Network error fetching ${resourceName}: ${lastError.message}`);
+    }
     return null;
   }
 

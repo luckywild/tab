@@ -64,6 +64,7 @@ class MojangApi {
     let sawRetryableError = false;
 
     for (let attempt = 0; attempt <= this.UUID_FETCH_RETRY_DELAYS_MS.length; attempt++) {
+      let debugLoggedThisAttempt = false;
       let anyRetryableThisAttempt = false;
       let anyNonRetryableErrorThisAttempt = false;
       let sawOfficialNotFoundThisAttempt = false;
@@ -96,6 +97,10 @@ class MojangApi {
         } catch (error) {
           sawRetryableError = true;
           anyRetryableThisAttempt = true;
+          if (!debugLoggedThisAttempt && this.api?.config?.get("debug")) {
+            debugLoggedThisAttempt = true;
+            this.api.debugLog?.(`[Mojang API] UUID fetch failed for ${playerName} via ${endpoint}: ${error.message}`);
+          }
         }
       }
 

@@ -396,6 +396,7 @@ class Wildtab {
         allowTagAlerts: true,
       });
     } catch (error) {
+      this.api.debugLog?.(`[Wildtab] Party member lookup failed: ${error.message}`);
       this.updatePartyIgnoreCache({
         expiresAt: now + this.PARTY_IGNORE_RETRY_MS,
         names: previousNames,
@@ -724,6 +725,9 @@ class Wildtab {
     try {
       return JSON.parse(trimmed);
     } catch (error) {
+      if (this.api?.config?.get("debug")) {
+        this.api.debugLog?.(`[Wildtab] Failed to parse JSON component: ${error.message}`);
+      }
       return null;
     }
   }
@@ -735,6 +739,9 @@ class Wildtab {
       try {
         return JSON.parse(JSON.stringify(value));
       } catch (error) {
+        if (this.api?.config?.get("debug")) {
+          this.api.debugLog?.(`[Wildtab] Failed to deep-clone footer value: ${error.message}`);
+        }
         return value;
       }
     }
@@ -980,7 +987,9 @@ class Wildtab {
         event.cancel();
       }
     } catch (error) {
-      // Best-effort cancellation.
+      if (this.api?.config?.get("debug")) {
+        this.api.debugLog?.(`[Wildtab] Failed to cancel intercept event: ${error.message}`);
+      }
     }
     event.cancelled = true;
     event.canceled = true;
