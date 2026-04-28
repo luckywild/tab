@@ -169,7 +169,7 @@ clearManagedPlayers(type = "all") {
     let maxWsLength = 0;
     let maxPingLength = 0;
 
-    for (const [name, data] of this.playerData.entries()) {
+    for (const [, data] of this.playerData.entries()) {
       const { stats } = data;
       const isLoading = !stats || stats.isLoading === true;
       const isNicked = !!stats?.isNicked;

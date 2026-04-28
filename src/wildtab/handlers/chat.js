@@ -353,7 +353,7 @@ class ChatHandler {
     const numeric = Number(value) || 0;
     const starToken = statsFormatter.formatPrestigeStars(Math.round(numeric));
     const plainDigits = String(Math.round(numeric));
-    const withoutBrackets = String(starToken).replace(/[\[\]✫✪⚝✥]/g, "");
+    const withoutBrackets = String(starToken).replace(/\[|\]|[✫✪⚝✥]/g, "");
     const cleaned = withoutBrackets.replace(/§r/g, "").trim();
     const symbolMatches = [...String(starToken).matchAll(/((?:§[0-9a-fk-or])*)([✫✪⚝✥])/gi)];
     const lastSymbol = symbolMatches[symbolMatches.length - 1];
@@ -822,6 +822,7 @@ class ChatHandler {
         at: Date.now(),
       };
     } catch (error) {
+      this.api.debugLog?.(`[ChatHandler] Failed to parse locraw JSON: ${error.message}`);
       return null;
     }
   }
@@ -1006,7 +1007,7 @@ class ChatHandler {
       try {
         this.api.sound?.("random.anvil_land");
       } catch (soundError) {
-        // Keep chat warning even if sound playback fails.
+        this.api.debugLog?.(`[ChatHandler] sound() failed: ${soundError.message}`);
       }
 
       this.api.chat(messages.autododge.apiDownPadTop);
@@ -1038,7 +1039,7 @@ class ChatHandler {
     }
   }
 
-  processAutododge(reason, options = {}) {
+  processAutododge(reason) {
     const decision = this.getAutododgeDecision();
 
     if (decision.action === "no_action") {

@@ -1,9 +1,17 @@
 #!/usr/bin/env node
 
-const chokidar = require("chokidar");
+// chokidar is ESM-only; load it via dynamic import so this script can stay CommonJS.
+let chokidar;
 const path = require("path");
 const fs = require("fs");
 const { spawn } = require("child_process");
+
+async function getChokidar() {
+  if (chokidar) return chokidar;
+  const mod = await import("chokidar");
+  chokidar = mod.default || mod;
+  return chokidar;
+}
 
 function parseArgs(argv) {
   const out = { starfishDir: process.env.STARFISH_DIR || null };
@@ -134,7 +142,7 @@ async function main() {
 
   await rebuildSync();
 
-  const watcher = chokidar.watch(watchDir, {
+  const watcher = (await getChokidar()).watch(watchDir, {
     ignoreInitial: true,
     awaitWriteFinish: {
       stabilityThreshold: 150,

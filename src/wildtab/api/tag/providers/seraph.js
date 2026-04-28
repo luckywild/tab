@@ -20,7 +20,7 @@ class SeraphApi extends TagProvider {
       return this.mojangApi.getUuid(playerName);
     }
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       const options = {
         hostname: "api.mojang.com",
         path: `/users/profiles/minecraft/${playerName}`,
@@ -41,6 +41,9 @@ class SeraphApi extends TagProvider {
               resolve(null);
             }
           } catch (err) {
+            if (this.api?.config?.get("debug")) {
+              this.api.debugLog?.(`[Seraph API] UUID JSON parse failed for ${playerName}: ${err.message}`);
+            }
             resolve(null);
           }
         });
@@ -195,7 +198,7 @@ class SeraphApi extends TagProvider {
     return icons[type] || "?";
   }
 
-  getTagColor(type) {
+  getTagColor() {
     return "b";
   }
 

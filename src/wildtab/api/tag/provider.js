@@ -7,11 +7,11 @@ class TagProvider {
   }
 
   async getTags(playerName) {
-    throw new Error("getTags must be implemented by subclass");
+    throw new Error(`getTags must be implemented by subclass (playerName=${String(playerName || "")})`);
   }
 
   mapToClientTag(providerTagType) {
-    throw new Error("mapToClientTag must be implemented by subclass");
+    throw new Error(`mapToClientTag must be implemented by subclass (providerTagType=${String(providerTagType || "")})`);
   }
 
   getSupportedTags() {
@@ -42,11 +42,15 @@ class TagProvider {
     return [];
   }
 
-  getCachedTags(playerName) {
+  getCachedTags() {
     return null;
   }
 
   setCachedTags(playerName, tags) {
+    // Optional override in subclasses.
+    if (this.api?.config?.get("debug")) {
+      this.api.debugLog?.(`[TagProvider] setCachedTags not implemented for ${this.getProviderName?.() || "Unknown"} (playerName=${String(playerName || "")}, tags=${Array.isArray(tags) ? tags.length : 0})`);
+    }
   }
 }
 
