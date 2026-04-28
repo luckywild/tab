@@ -1,0 +1,17 @@
+{
+  "name": "tab",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "bun run clean && mkdir -p dist && cd src && zip -r ../dist/wildtab.zip wildtab.js wildtab",
+    "dev": "node scripts/dev-sync.cjs",
+    "check": "node scripts/check-js.cjs",
+    "lint": "eslint \"src/**/*.js\""
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "chokidar": "^5.0.0",
+    "eslint": "^10.2.1"
+  }
+}
