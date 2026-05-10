@@ -6,7 +6,7 @@ module.exports = (api) => {
     name: "wildtab",
     displayName: "wildtab",
     prefix: "§dwt",
-    version: "1.0.0",
+    version: "1.0.3",
     author: "wild",
     minVersion: "0.1.7",
     description: "best bedwars tab",
