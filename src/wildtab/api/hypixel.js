@@ -1,5 +1,6 @@
 class HypixelApi {
   constructor(api, cache, mojangApi, bordicApi = null) {
+    this.DEFAULT_BASE_URL = "https://api.hypixel.net";
     this.api = api;
     this.cache = cache;
     this.mojangApi = mojangApi;
@@ -27,6 +28,41 @@ class HypixelApi {
     return this.api.config.get("api.hypixel.key");
   }
 
+  getBaseUrl() {
+    const configuredBaseUrl = String(this.api.config.get("api.hypixel.baseUrl") || "").trim();
+    const baseUrl = configuredBaseUrl || this.DEFAULT_BASE_URL;
+    return baseUrl.replace(/\/+$/, "");
+  }
+
+  isUsingDefaultBaseUrl() {
+    return this.getBaseUrl() === this.DEFAULT_BASE_URL;
+  }
+
+  shouldRequireApiKey() {
+    return this.isUsingDefaultBaseUrl();
+  }
+
+  buildUrl(path, params = {}) {
+    const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+    const url = new URL(`${this.getBaseUrl()}${normalizedPath}`);
+
+    for (const [key, value] of Object.entries(params)) {
+      if (value !== undefined && value !== null) {
+        url.searchParams.set(key, String(value));
+      }
+    }
+
+    return url.toString();
+  }
+
+  buildHeaders(apiKey) {
+    return apiKey ? { "API-Key": apiKey } : {};
+  }
+
+  canFetchHypixel(apiKey) {
+    return !!apiKey || !this.shouldRequireApiKey();
+  }
+
   async getEstimatedWinstreakByUuid(uuid) {
     if (!this.bordicApi) return null;
     return this.bordicApi.getEstimatedWinstreakByUuid(uuid);
@@ -48,13 +84,13 @@ class HypixelApi {
   }
 
   async fetchJsonWithRetry(url, apiKey, retryDelays = [500, 1000]) {
-    if (!apiKey) return null;
+    if (!this.canFetchHypixel(apiKey)) return null;
 
     let lastStatus = null;
     let lastError = null;
     for (let attempt = 0; attempt <= retryDelays.length; attempt++) {
       try {
-        const response = await fetch(url, { headers: { "API-Key": apiKey } });
+        const response = await fetch(url, { headers: this.buildHeaders(apiKey) });
         if (response.ok) {
           return await response.json();
         }
@@ -85,7 +121,9 @@ class HypixelApi {
   }
 
   async fetchJsonResultWithRetry(url, apiKey, retryDelays = [500, 1000]) {
-    if (!apiKey) return { ok: false, status: 0, data: null, error: "No API key" };
+    if (!this.canFetchHypixel(apiKey)) {
+      return { ok: false, status: 0, data: null, error: "No API key" };
+    }
 
     let lastStatus = 0;
     let lastError = null;
@@ -94,7 +132,7 @@ class HypixelApi {
 
     for (let attempt = 0; attempt <= retryDelays.length; attempt++) {
       try {
-        const response = await fetch(url, { headers: { "API-Key": apiKey } });
+        const response = await fetch(url, { headers: this.buildHeaders(apiKey) });
         lastStatus = response.status;
 
         let data = null;
@@ -139,8 +177,8 @@ class HypixelApi {
     for (let attempt = 0; attempt <= this.FETCH_RETRY_DELAYS_MS.length; attempt++) {
       try {
         const response = await fetch(
-          `https://api.hypixel.net/v2/player?uuid=${uuid}`,
-          { headers: { "API-Key": apiKey } },
+          this.buildUrl("/v2/player", { uuid }),
+          { headers: this.buildHeaders(apiKey) },
         );
 
         if (response.ok) {
@@ -216,7 +254,9 @@ class HypixelApi {
     if (cached) return cached;
 
     const apiKey = this.getApiKey();
-    if (!apiKey) return { isNicked: true, error: "No API key" };
+    if (!this.canFetchHypixel(apiKey)) {
+      return { isNicked: true, error: "No API key" };
+    }
 
     try {
       const uuid = await this.mojangApi.getUuid(playerName);
@@ -296,7 +336,7 @@ class HypixelApi {
 
   async getPlayerStatusResultByUuid(uuid) {
     const apiKey = this.getApiKey();
-    if (!apiKey) {
+    if (!this.canFetchHypixel(apiKey)) {
       return {
         trackable: false,
         apiDisabled: true,
@@ -306,7 +346,7 @@ class HypixelApi {
     }
 
     const response = await this.fetchJsonResultWithRetry(
-      `https://api.hypixel.net/v2/status?uuid=${uuid}`,
+      this.buildUrl("/v2/status", { uuid }),
       apiKey,
       [300, 700],
     );
@@ -342,7 +382,7 @@ class HypixelApi {
 
   async getRecentGamesResultByUuid(uuid) {
     const apiKey = this.getApiKey();
-    if (!apiKey) {
+    if (!this.canFetchHypixel(apiKey)) {
       return {
         trackable: false,
         apiDisabled: true,
@@ -352,7 +392,7 @@ class HypixelApi {
     }
 
     const response = await this.fetchJsonResultWithRetry(
-      `https://api.hypixel.net/v2/recentgames?uuid=${uuid}`,
+      this.buildUrl("/v2/recentgames", { uuid }),
       apiKey,
       [300, 700],
     );
@@ -420,10 +460,10 @@ class HypixelApi {
     }
 
     const apiKey = this.getApiKey();
-    if (!apiKey) return this.gameResourcesCache || {};
+    if (!this.canFetchHypixel(apiKey)) return this.gameResourcesCache || {};
 
     const data = await this.fetchJsonWithRetry(
-      "https://api.hypixel.net/v2/resources/games",
+      this.buildUrl("/v2/resources/games"),
       apiKey,
       [500, 1000],
     );

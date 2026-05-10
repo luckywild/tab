@@ -8,6 +8,7 @@ module.exports = [
         hubOnApiFailure: false,
         hypixel: {
           key: "",
+          baseUrl: "",
           ttl: 300,
         },
         urchin: {
@@ -43,6 +44,11 @@ module.exports = [
         key: "api.hypixel.key",
         type: "text",
         description: "Hypixel API key. Get one at https://developer.hypixel.net/",
+      },
+      {
+        key: "api.hypixel.baseUrl",
+        type: "text",
+        description: "Optional Hypixel API base URL, defaults to https://api.hypixel.net",
       },
       {
         key: "api.hypixel.ttl",
