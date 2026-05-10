@@ -8,14 +8,18 @@ class CommandHandler {
   }
 
   async testHypixelApi() {
-    const apiKey = this.api.config.get("api.hypixel.key");
-    if (!apiKey) {
+    const hypixelApi = this.wildtabInstance.hypixelApi;
+    const apiKey = hypixelApi.getApiKey();
+    if (!hypixelApi.canFetchHypixel(apiKey)) {
       return { success: false, error: messages.error.noApiKeyConfigured };
     }
     try {
       const response = await fetch(
-        "https://api.hypixel.net/v2/player?uuid=069a79f444e94726a5befca90e38aaf5",
-        { headers: { "API-Key": apiKey } },
+        hypixelApi.buildUrl(
+          "/v2/player",
+          { uuid: "069a79f444e94726a5befca90e38aaf5" },
+        ),
+        { headers: hypixelApi.buildHeaders(apiKey) },
       );
       if (response.ok) {
         return { success: true };
