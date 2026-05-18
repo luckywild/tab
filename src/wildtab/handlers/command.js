@@ -36,19 +36,15 @@ class CommandHandler {
       return { success: true, skipped: true, error: messages.error.disabledInConfig };
     }
 
-    const sources = "MANUAL";
-    const path = `https://urchin.ws/player?sources=${sources}`;
+    const urchinApi = this.wildtabInstance.urchinApi;
+    const apiKey = urchinApi.getApiKey();
+    if (!apiKey) {
+      return { success: false, error: messages.error.noApiKeyConfigured };
+    }
 
     try {
-      const response = await fetch(path, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ usernames: ["Notch"] }),
-      });
-      if (response.ok) {
-        return { success: true };
-      }
-      return { success: false, error: `HTTP ${response.status}` };
+      await urchinApi.checkTags("Notch", apiKey);
+      return { success: true };
     } catch (err) {
       return { success: false, error: err.message };
     }
