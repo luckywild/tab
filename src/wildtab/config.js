@@ -13,6 +13,7 @@ module.exports = [
         },
         urchin: {
           enabled: true,
+          key: "",
           ttl: 1800,
         },
         seraph: {
@@ -60,6 +61,11 @@ module.exports = [
         type: "toggle",
         text: ["OFF", "ON"],
         description: "Enable Urchin tag provider",
+      },
+      {
+        key: "api.urchin.key",
+        type: "text",
+        description: "Urchin API key. Required when Urchin is enabled.",
       },
       {
         key: "api.urchin.ttl",
